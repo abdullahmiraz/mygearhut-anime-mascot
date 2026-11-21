@@ -130,15 +130,27 @@ export function createAnimeMascot() {
   headGeo.computeVertexNormals();
   part(head, headGeo, skin, {});
 
-  // Anime hair: a smaller cap with shorter bangs that leave the brows visible.
+  // Hair follows the reference: short textured top, faded sides, and a rear
+  // mass that runs down to the nape so it lines up with the neck.
   part(head, new THREE.SphereGeometry(0.307, 28, 18, 0, Math.PI * 2, 0, Math.PI * 0.32), hair, {
-    pos: [0, 0.02, 0], scale: [1.02, 1, 0.94],
+    pos: [0, 0.02, 0], scale: [1.02, 1, 0.94], outline: 1.03,
   });
-  for (let i = 0; i < 5; i++) {
-    const x = -0.17 + i * 0.085;
-    const y = 0.29 - Math.abs(i - 2) * 0.012;
-    part(head, new THREE.ConeGeometry(0.068, 0.16, 6), i % 2 ? hairLight : hair, {
-      pos: [x, y, 0.19], rot: [2.25, 0, (i - 2) * 0.16], outline: 1.05,
+  part(head, new THREE.SphereGeometry(0.3, 28, 20, 0, Math.PI * 2, 0, Math.PI * 0.68), hair, {
+    pos: [0, -0.03, -0.12], scale: [0.9, 1, 0.8], outline: 1.03,
+  });
+  part(head, new THREE.SphereGeometry(0.1, 16, 12), hair, {
+    pos: [0, -0.17, -0.18], scale: [1.1, 1.5, 0.7], outline: 1.03,
+  });
+  for (const s of [-1, 1]) {
+    part(head, new THREE.SphereGeometry(0.095, 16, 12), hair, {
+      pos: [s * 0.27, 0.01, 0.02], scale: [0.5, 1.1, 0.9], outline: 1.03,
+    });
+  }
+  for (let i = 0; i < 8; i++) {
+    const x = -0.2 + i * 0.057;
+    const y = 0.28 - Math.abs(i - 3.5) * 0.008;
+    part(head, new THREE.ConeGeometry(0.045, 0.12, 6), i % 2 ? hairLight : hair, {
+      pos: [x, y, 0.19], rot: [2.15, 0, (i - 3.5) * 0.13], outline: 1.04,
     });
   }
   for (const s of [-1, 1]) {
