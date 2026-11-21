@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
 
 export const ACCENT = 0x22c55e;
 
@@ -103,14 +104,6 @@ export function createAnimeMascot() {
   torso.add(neck);
   track('neck', neck);
   part(neck, new THREE.CylinderGeometry(0.082, 0.1, 0.26, 20), skin, { pos: [0, 0.13, 0] });
-  // Radius-based front throat and back-of-neck masses blend the cylinder into
-  // the jaw and shoulders instead of leaving a thin stick.
-  part(neck, new THREE.SphereGeometry(0.075, 16, 12), skinShade, {
-    pos: [0, 0.11, 0.075], scale: [0.85, 1.25, 0.5], outline: 0,
-  });
-  part(neck, new THREE.SphereGeometry(0.08, 16, 12), skin, {
-    pos: [0, 0.12, -0.07], scale: [0.95, 1.2, 0.6], outline: 0,
-  });
 
   const head = new THREE.Group();
   head.name = 'head';
@@ -224,8 +217,24 @@ export function createAnimeMascot() {
       pos: [0, -0.02, 0.066], scale: [1, 1, 0.5], outline: 0,
     });
     track(`${label}Knee`, knee);
-    part(knee, new THREE.SphereGeometry(0.075, 16, 12), shoe, { pos: [0, -0.35, 0.045], scale: [1, 0.65, 1.5], outline: 1.05 });
-    part(knee, new THREE.BoxGeometry(0.14, 0.025, 0.22), sole, { pos: [0, -0.39, 0.05], outline: 0 });
+    // Layered sneaker: outsole, midsole, toe cap, upper, tongue and laces.
+    const foot = new THREE.Group();
+    foot.name = `${label}Foot`;
+    foot.position.y = -0.35;
+    knee.add(foot);
+    part(foot, new RoundedBoxGeometry(0.14, 0.028, 0.24, 3, 0.012), sole, { pos: [0, -0.042, 0.045], outline: 0 });
+    part(foot, new RoundedBoxGeometry(0.145, 0.03, 0.245, 3, 0.012), shoe, { pos: [0, -0.02, 0.045], outline: 1.03 });
+    part(foot, new THREE.SphereGeometry(0.062, 16, 12), shoe, { pos: [0, 0.005, 0.08], scale: [1, 0.7, 1.4], outline: 1.04 });
+    part(foot, new THREE.SphereGeometry(0.052, 14, 10), shoe, { pos: [0, 0.0, 0.135], scale: [1.1, 0.55, 0.65], outline: 0 });
+    part(foot, new RoundedBoxGeometry(0.05, 0.012, 0.07, 2, 0.005), shoe, { pos: [0, 0.045, 0.025], rot: [-0.3, 0, 0], outline: 0 });
+    for (let i = 0; i < 3; i++) {
+      part(foot, new THREE.CapsuleGeometry(0.0035, 0.038, 3, 8), shoe, {
+        pos: [0, 0.038 + i * 0.003, 0.055 - i * 0.022], rot: [0, 0, i % 2 ? -0.5 : 0.5], outline: 0,
+      });
+    }
+    part(foot, new THREE.SphereGeometry(0.04, 14, 10), sole, {
+      pos: [s * 0.07, 0.0, 0.075], scale: [0.18, 0.5, 1.1], outline: 0,
+    });
   }
 
   const POSES = {
