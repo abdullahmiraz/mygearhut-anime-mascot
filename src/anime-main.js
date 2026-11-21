@@ -10,60 +10,86 @@ const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserv
 renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
 renderer.outputColorSpace = THREE.SRGBColorSpace;
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
-renderer.toneMappingExposure = 1.0;
-renderer.shadowMap.enabled = true;
-renderer.shadowMap.type = THREE.PCFShadowMap;
+renderer.toneMappingExposure = 1.08;
 stage.appendChild(renderer.domElement);
 
 const scene = new THREE.Scene();
-scene.background = new THREE.Color(0x0d1117);
+
+function studioBackdrop(center, middle, edge) {
+  const canvas = document.createElement('canvas');
+  canvas.width = canvas.height = 512;
+  const ctx = canvas.getContext('2d');
+  const gradient = ctx.createRadialGradient(256, 207, 22, 256, 247, 337);
+  gradient.addColorStop(0, center);
+  gradient.addColorStop(0.55, middle);
+  gradient.addColorStop(1, edge);
+  ctx.fillStyle = gradient;
+  ctx.fillRect(0, 0, 512, 512);
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.colorSpace = THREE.SRGBColorSpace;
+  return texture;
+}
+
+const backdrops = {
+  dark: studioBackdrop('#283d49', '#182630', '#101820'),
+  light: studioBackdrop('#f7faf5', '#e1eae5', '#c8d8d4'),
+  transparent: null,
+};
+scene.background = backdrops.dark;
 
 const camera = new THREE.PerspectiveCamera(32, 1, 0.1, 100);
 const controls = new OrbitControls(camera, renderer.domElement);
 controls.enableDamping = true;
 controls.enablePan = false;
 
-// Toon materials need lights. A soft key and a cool fill keep the cel bands clean.
-scene.add(new THREE.HemisphereLight(0xdfeaff, 0x3a3f4a, 1.4));
-const key = new THREE.DirectionalLight(0xffffff, 2.2);
-key.position.set(3, 5, 4);
-key.castShadow = true;
-key.shadow.mapSize.set(1024, 1024);
-key.shadow.camera.left = -3;
-key.shadow.camera.right = 3;
-key.shadow.camera.top = 3;
-key.shadow.camera.bottom = -3;
-key.shadow.normalBias = 0.02;
+// A broad ambient base keeps the cel steps readable in profile and from behind.
+scene.add(new THREE.HemisphereLight(0xffeedf, 0x8394b0, 2.1));
+const key = new THREE.DirectionalLight(0xffefe1, 1.65);
+key.position.set(2, 4, 5);
 scene.add(key);
-const fill = new THREE.DirectionalLight(0x9fc4ff, 0.5);
-fill.position.set(-4, 2, 2);
-scene.add(fill);
+const rim = new THREE.DirectionalLight(0xaac9ff, 0.8);
+rim.position.set(-3, 2, -4);
+scene.add(rim);
 
-const floor = new THREE.Mesh(
-  new THREE.CircleGeometry(5, 64),
-  new THREE.MeshStandardMaterial({ color: 0x121a22, roughness: 1 }),
-);
-floor.rotation.x = -Math.PI / 2;
-floor.receiveShadow = true;
-scene.add(floor);
+const contact = new THREE.Mesh(new THREE.PlaneGeometry(1.2, 0.7), new THREE.ShaderMaterial({
+  transparent: true,
+  depthWrite: false,
+  uniforms: { opacity: { value: 0.63 } },
+  vertexShader: `
+    varying vec2 coords;
+    void main() {
+      coords = uv * 2.0 - 1.0;
+      gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+    }`,
+  fragmentShader: `
+    varying vec2 coords;
+    uniform float opacity;
+    void main() {
+      float falloff = 1.0 - smoothstep(0.0, 1.0, length(coords));
+      gl_FragColor = vec4(0.04, 0.06, 0.08, opacity * falloff * falloff);
+    }`,
+}));
+contact.rotation.x = -Math.PI / 2;
+contact.position.set(0, 0, 0.052);
+scene.add(contact);
 
 const mascot = createAnimeMascot();
 scene.add(mascot.root);
 
 const FRAMES = {
-  full: { distance: 4.2, targetY: 0.9, fov: 34 },
-  medium: { distance: 2.9, targetY: 1.31, fov: 32 },
-  close: { distance: 1.9, targetY: 1.66, fov: 30 },
+  full: { distance: 3.85, targetY: 0.975, fov: 34, minAspect: 0.52, elevation: 0.3 },
+  medium: { distance: 2.62, targetY: 1.34, fov: 32, minAspect: 0.66, elevation: 0.06 },
+  close: { distance: 1.72, targetY: 1.64, fov: 30, minAspect: 0.67, elevation: 0.015 },
 };
 let transition = null;
 
 function setFrame(name, instant = false) {
   const f = FRAMES[name];
-  if (!f) return;
+  if (!Object.hasOwn(FRAMES, name)) return;
   document.querySelectorAll('#framing button').forEach((b) => b.classList.toggle('active', b.dataset.frame === name));
-  const boost = Math.max(1, 0.75 / camera.aspect);
+  const boost = Math.max(1, f.minAspect / camera.aspect);
   const to = {
-    position: new THREE.Vector3(0, f.targetY + 0.05, f.distance * boost),
+    position: new THREE.Vector3(0, f.targetY + f.elevation * boost, f.distance * boost),
     target: new THREE.Vector3(0, f.targetY, 0),
     fov: f.fov,
   };
@@ -85,10 +111,13 @@ function setFrame(name, instant = false) {
 }
 
 function setBackground(mode) {
+  if (!Object.hasOwn(backdrops, mode)) return;
   const transparent = mode === 'transparent';
-  scene.background = transparent ? null : new THREE.Color(mode === 'light' ? 0xeef2f6 : 0x0d1117);
-  floor.visible = !transparent;
+  scene.background = backdrops[mode];
+  contact.visible = !transparent;
+  contact.material.uniforms.opacity.value = mode === 'light' ? 0.32 : 0.63;
   document.body.classList.toggle('bg-transparent', transparent);
+  document.body.classList.toggle('bg-light', mode === 'light');
   document.querySelectorAll('#background button').forEach((b) => b.classList.toggle('active', b.dataset.bg === mode));
   setStatus(`Background: ${mode}`);
 }
@@ -128,8 +157,9 @@ if (params.get('ui') === '0') setUI(false);
 if (params.get('frame')) setFrame(params.get('frame'), true);
 if (params.get('bg')) setBackground(params.get('bg'));
 if (params.get('state')) setState(params.get('state'));
-if (params.get('yaw')) {
-  const yaw = THREE.MathUtils.degToRad(Number(params.get('yaw')));
+const angle = Number(params.get('yaw'));
+if (Number.isFinite(angle) && angle !== 0) {
+  const yaw = THREE.MathUtils.degToRad(angle);
   const dx = camera.position.x - controls.target.x;
   const dz = camera.position.z - controls.target.z;
   const d = Math.hypot(dx, dz);

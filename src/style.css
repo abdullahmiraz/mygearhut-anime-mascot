@@ -46,6 +46,24 @@ canvas { display: block; width: 100%; height: 100%; }
 
 .topbar > * { pointer-events: auto; }
 
+.topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.variant-link {
+  color: var(--text);
+  font-size: 12px;
+  text-underline-offset: 3px;
+}
+
+body.bg-light .topbar,
+body.bg-light .variant-link,
+body.bg-light .topbar button { color: #17242e; }
+
+body.bg-light .topbar button { border-color: #17242e44; }
+
 .brand {
   display: flex;
   align-items: center;

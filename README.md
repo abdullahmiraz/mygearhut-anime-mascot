@@ -57,6 +57,14 @@ Open http://127.0.0.1:5173/
 npm run check   # production build + rig math check
 ```
 
+## Anime variant
+
+Open [the anime variant](http://127.0.0.1:5173/anime.html) from the dev server or follow the **Anime variant** link in the original viewer. The production build includes both pages.
+
+The anime viewer exposes `window.animeMascot` after `mascot:ready`. Use `state(name)` with `idle`, `thinking`, `speaking`, `waving` or `error`. The other methods are `frame(name)`, `background(mode)`, `ui(show)`, `blink()` and `captureFrame()`.
+
+For a clean three-quarter capture, use `/anime.html?ui=0&frame=medium&yaw=20&bg=transparent`. Use `state=speaking` or `state=waving` to start in that pose.
+
 ## Controls
 
 Drag to orbit, scroll to zoom. Buttons cover gesture, talk, framing, background and orbit.
