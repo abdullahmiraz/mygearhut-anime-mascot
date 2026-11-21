@@ -69,7 +69,6 @@ export function createAnimeMascot() {
   const eyeWhite = toon(C.eyeWhite);
   const iris = toon(C.iris);
   const pupil = toon(C.pupil);
-  const mouthMat = toon(C.mouth);
   const browMat = toon(C.brow);
   const shirt = toon(C.shirt);
   const shirtDark = toon(C.shirtDark);
@@ -111,11 +110,11 @@ export function createAnimeMascot() {
   part(head, new THREE.SphereGeometry(0.308, 28, 18, 0, Math.PI * 2, 0, Math.PI * 0.55), hair, {
     pos: [0, 0.01, 0], scale: [1.02, 1, 0.94],
   });
-  for (let i = 0; i < 7; i++) {
-    const x = -0.24 + i * 0.08;
-    const y = 0.2 - Math.abs(i - 3) * 0.015;
-    part(head, new THREE.ConeGeometry(0.075, 0.22, 7), i % 2 ? hairLight : hair, {
-      pos: [x, y, 0.2], rot: [2.6, 0, (i - 3) * 0.12], outline: 1.06,
+  for (let i = 0; i < 5; i++) {
+    const x = -0.2 + i * 0.1;
+    const y = 0.22 - Math.abs(i - 2) * 0.02;
+    part(head, new THREE.ConeGeometry(0.085, 0.3, 6), i % 2 ? hairLight : hair, {
+      pos: [x, y, 0.22], rot: [3.0, 0, (i - 2) * 0.22], outline: 1.05,
     });
   }
   for (const s of [-1, 1]) {
@@ -129,15 +128,15 @@ export function createAnimeMascot() {
     const eye = new THREE.Group();
     eye.position.set(s * 0.115, 0.035, 0.252);
     head.add(eye);
-    part(eye, new THREE.SphereGeometry(0.075, 24, 16), eyeWhite, { scale: [0.78, 1.15, 0.28], outline: 0 });
-    part(eye, new THREE.SphereGeometry(0.05, 20, 14), iris, { pos: [0, -0.005, 0.018], scale: [0.85, 1, 0.3], outline: 0 });
-    part(eye, new THREE.SphereGeometry(0.028, 16, 12), pupil, { pos: [0, -0.005, 0.026], scale: [0.8, 1, 0.3], outline: 0 });
-    part(eye, new THREE.SphereGeometry(0.012, 12, 10), eyeWhite, { pos: [-0.018, 0.026, 0.03], outline: 0 });
-    part(eye, new THREE.SphereGeometry(0.08, 20, 12), skin, { pos: [0, 0.07, -0.006], scale: [0.8, 0.22, 0.32], outline: 0 });
+    part(eye, new THREE.SphereGeometry(0.085, 24, 16), eyeWhite, { scale: [0.82, 1.2, 0.25], outline: 0 });
+    part(eye, new THREE.SphereGeometry(0.055, 20, 14), iris, { pos: [0, 0.005, 0.018], scale: [0.9, 1, 0.3], outline: 0 });
+    part(eye, new THREE.SphereGeometry(0.032, 16, 12), pupil, { pos: [0, 0.005, 0.026], scale: [0.85, 1, 0.3], outline: 0 });
+    part(eye, new THREE.SphereGeometry(0.016, 12, 10), eyeWhite, { pos: [-0.02, 0.03, 0.032], outline: 0 });
+    part(eye, new THREE.BoxGeometry(0.14, 0.018, 0.02), browMat, { pos: [0, 0.087, 0.015], rot: [0, 0, s * -0.04], outline: 0 });
     eyes.push(eye);
 
-    const brow = part(head, new THREE.BoxGeometry(0.11, 0.017, 0.02), browMat, { pos: [s * 0.115, 0.145, 0.25], rot: [0, 0, s * 0.08] });
-    joints[s > 0 ? 'browR' : 'browL'] = { obj: brow, base: { x: 0, y: 0, z: s * 0.08 }, cur: { x: 0, y: 0, z: s * 0.08 } };
+    const brow = part(head, new THREE.BoxGeometry(0.12, 0.012, 0.018), browMat, { pos: [s * 0.115, 0.175, 0.252], rot: [0, 0, s * 0.1] });
+    joints[s > 0 ? 'browR' : 'browL'] = { obj: brow, base: { x: 0, y: 0, z: s * 0.1 }, cur: { x: 0, y: 0, z: s * 0.1 } };
   }
 
   part(head, new THREE.SphereGeometry(0.022, 12, 10), skinShade, { pos: [0, -0.055, 0.268], scale: [1, 0.7, 0.6], outline: 0 });
@@ -146,15 +145,24 @@ export function createAnimeMascot() {
   mouth.name = 'mouth';
   mouth.position.set(0, -0.13, 0.258);
   head.add(mouth);
-  const mouthMesh = part(mouth, new THREE.SphereGeometry(0.05, 18, 12), mouthMat, { scale: [1.2, 0.14, 0.25], outline: 0 });
+  const smileMat = toon(C.mouth, { transparent: true, opacity: 1 });
+  const openMat = toon(C.mouth, { transparent: true, opacity: 0 });
+  const smile = part(mouth, new THREE.TorusGeometry(0.045, 0.005, 6, 22, Math.PI * 0.8), smileMat, {
+    rot: [0, 0, Math.PI * 1.1], outline: 0,
+  });
+  const mouthMesh = part(mouth, new THREE.SphereGeometry(0.045, 18, 12), openMat, {
+    scale: [1.1, 0.01, 0.25], outline: 0,
+  });
 
   // Arms.
   for (const s of [-1, 1]) {
     const label = s > 0 ? 'r' : 'l';
+    part(torso, new THREE.SphereGeometry(0.082, 16, 12), shirt, { pos: [s * 0.25, 0.36, 0] });
     const shoulder = segment(torso, `${label}Shoulder`, 0.075, 0.3, shirt, [s * 0.25, 0.36, 0]);
     shoulder.rotation.z = s * 0.12;
     track(`${label}Shoulder`, shoulder, { x: 0, y: 0, z: s * 0.12 });
     const elbow = segment(shoulder, `${label}Elbow`, 0.062, 0.28, shirt, [0, -0.3, 0]);
+    part(elbow, new THREE.SphereGeometry(0.066, 16, 12), shirt, {});
     track(`${label}Elbow`, elbow);
     const hand = new THREE.Group();
     hand.name = `${label}Hand`;
@@ -221,7 +229,10 @@ export function createAnimeMascot() {
 
     let open = pose.mouth;
     if (state === 'speaking') open = 0.2 + Math.abs(Math.sin(t * 12.5)) * 0.5;
-    mouthMesh.scale.y += (open - mouthMesh.scale.y) * (1 - Math.exp(-dt * 16));
+    const mouthK = 1 - Math.exp(-dt * 16);
+    mouthMesh.scale.y += (Math.max(0.01, open) - mouthMesh.scale.y) * mouthK;
+    openMat.opacity += ((state === 'speaking' ? 1 : 0) - openMat.opacity) * mouthK;
+    smileMat.opacity += ((state === 'speaking' ? 0 : 1) - smileMat.opacity) * mouthK;
 
     if (blinkStart < 0 && t > blinkAt) blinkStart = t;
     let eyeScale = 1;
