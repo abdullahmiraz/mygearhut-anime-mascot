@@ -4,6 +4,12 @@ A stylized, human-shaped explainer character built with Three.js. Runs locally i
 
 Status: local build only. Nothing is deployed, posted, or published. That still needs Abdullah's explicit approval.
 
+Git restore points:
+- `v1-threejs-before-blender` (tag and branch) points to commit `3f7eb38`, the first Three.js-only mascot before any Blender experiments. Three.js is pinned to `0.187.0` in `package.json`.
+- `master` is the latest working version.
+- To return to the first variant: `git checkout v1-threejs-before-blender`. To come back: `git checkout master`.
+- All commits are local. No remote was added and nothing was pushed.
+
 ## Research done before building
 
 Web search was unavailable in this session, so search results were fetched from DuckDuckGo HTML and the source pages were read directly.
