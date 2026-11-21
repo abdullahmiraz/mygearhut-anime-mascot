@@ -168,3 +168,25 @@ body.hide-ui [data-ui] { display: none !important; }
   .panel { right: 10px; left: 10px; top: auto; bottom: 10px; width: auto; }
   .status { display: none; }
 }
+
+
+.anime-viewer .panel {
+  width: min(270px, calc(100% - 32px));
+  max-height: calc(100% - 72px);
+  overflow-y: auto;
+}
+
+.presenter-tools { margin-top: 7px; }
+
+@media (max-width: 640px) {
+  .anime-viewer .topbar { padding-inline: 10px; }
+  .anime-viewer .topbar-actions { gap: 7px; }
+  .anime-viewer .panel { width: auto; max-height: 41%; }
+}
+
+
+body.anime-viewer.bg-transparent { background: transparent; }
+
+body.anime-viewer.bg-transparent:not(.hide-ui) #stage {
+  background: repeating-conic-gradient(#222d37 0% 25%, #18222c 0% 50%) 50% / 28px 28px;
+}

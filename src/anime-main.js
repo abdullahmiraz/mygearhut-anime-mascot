@@ -5,6 +5,11 @@ import { createAnimeMascot } from './anime-mascot.js';
 const stage = document.getElementById('stage');
 const statusEl = document.getElementById('status');
 const setStatus = (text) => { statusEl.textContent = text; };
+const params = new URLSearchParams(location.search);
+const manualClock = params.get('manual') === '1';
+const pointerButton = document.getElementById('pointer-toggle');
+const talkButton = document.getElementById('talk-toggle');
+const overlayButton = document.getElementById('overlay');
 
 const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true });
 renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
@@ -77,19 +82,76 @@ const mascot = createAnimeMascot();
 scene.add(mascot.root);
 
 const FRAMES = {
-  full: { distance: 3.85, targetY: 0.975, fov: 34, minAspect: 0.52, elevation: 0.3 },
+  full: { distance: 3.85, targetY: 0.975, fov: 34, minAspect: 0.62, elevation: 0.3 },
   medium: { distance: 2.62, targetY: 1.34, fov: 32, minAspect: 0.66, elevation: 0.06 },
   close: { distance: 1.72, targetY: 1.64, fov: 30, minAspect: 0.67, elevation: 0.015 },
+  overlay: { distance: 4.44, targetY: 1.02, fov: 36, minAspect: 0.98, elevation: 0.09 },
 };
 let transition = null;
+let currentFrame = 'medium';
+let currentBackground = 'dark';
+let zoomCue = null;
+let heldZoom = 1;
+const ZOOM_MOVES = {
+  in: { duration: 0.92, label: 'Push in', scale: 1.20 },
+  out: { duration: 0.92, label: 'Pull out', scale: 1 / 1.20 },
+  punch: { duration: 0.84, label: 'Punch in' },
+};
+const ease = (progress) => progress * progress * (3 - 2 * progress);
+
+function cueZoom(target, duration, punch = false) {
+  zoomCue = { elapsed: 0, from: camera.zoom, to: target, duration, punch };
+}
+
+function zoom(name, seconds) {
+  if (!Object.hasOwn(ZOOM_MOVES, name)) return false;
+  const { duration, label, scale } = ZOOM_MOVES[name];
+  const secondsToPlay = Number.isFinite(seconds) ? THREE.MathUtils.clamp(seconds, 0.12, 6) : duration;
+  if (name === 'punch') {
+    cueZoom(heldZoom * 1.13, secondsToPlay, true);
+  } else {
+    heldZoom = THREE.MathUtils.clamp(heldZoom * scale, 0.70, 1.65);
+    cueZoom(heldZoom, secondsToPlay);
+  }
+  setStatus(label);
+  return true;
+}
+
+function updateZoom(dt) {
+  if (!zoomCue) return;
+  zoomCue.elapsed += dt;
+  const { elapsed, from, to, duration, punch } = zoomCue;
+  const progress = Math.min(1, elapsed / duration);
+  if (!punch) {
+    camera.zoom = THREE.MathUtils.lerp(from, to, ease(progress));
+  } else if (progress < 0.32) {
+    camera.zoom = THREE.MathUtils.lerp(from, to, ease(progress / 0.32));
+  } else if (progress < 0.53) {
+    camera.zoom = to;
+  } else {
+    camera.zoom = THREE.MathUtils.lerp(to, heldZoom, ease((progress - 0.53) / 0.47));
+  }
+  camera.updateProjectionMatrix();
+  if (progress >= 1) zoomCue = null;
+}
+
+const syncOverlayButton = () => {
+  overlayButton.setAttribute('aria-pressed', String(currentFrame === 'overlay' && currentBackground === 'transparent'));
+};
+
+const frameBoost = (name, aspect) => Math.max(1, FRAMES[name].minAspect / aspect);
 
 function setFrame(name, instant = false) {
+  if (!Object.hasOwn(FRAMES, name)) return false;
+  currentFrame = name;
+  heldZoom = 1;
   const f = FRAMES[name];
-  if (!Object.hasOwn(FRAMES, name)) return;
   document.querySelectorAll('#framing button').forEach((b) => b.classList.toggle('active', b.dataset.frame === name));
-  const boost = Math.max(1, f.minAspect / camera.aspect);
+  const boost = frameBoost(name, camera.aspect);
+  const yaw = Math.atan2(camera.position.x - controls.target.x, camera.position.z - controls.target.z);
+  const distance = f.distance * boost;
   const to = {
-    position: new THREE.Vector3(0, f.targetY + f.elevation * boost, f.distance * boost),
+    position: new THREE.Vector3(Math.sin(yaw) * distance, f.targetY + f.elevation * boost, Math.cos(yaw) * distance),
     target: new THREE.Vector3(0, f.targetY, 0),
     fov: f.fov,
   };
@@ -97,6 +159,8 @@ function setFrame(name, instant = false) {
     camera.position.copy(to.position);
     controls.target.copy(to.target);
     camera.fov = to.fov;
+    camera.zoom = heldZoom;
+    zoomCue = null;
     camera.updateProjectionMatrix();
     transition = null;
   } else {
@@ -106,12 +170,16 @@ function setFrame(name, instant = false) {
       fromTarget: controls.target.clone(),
       fromFov: camera.fov,
     };
+    cueZoom(heldZoom, transition.duration);
   }
+  syncOverlayButton();
   setStatus(`Framing: ${name}`);
+  return true;
 }
 
 function setBackground(mode) {
-  if (!Object.hasOwn(backdrops, mode)) return;
+  if (!Object.hasOwn(backdrops, mode)) return false;
+  currentBackground = mode;
   const transparent = mode === 'transparent';
   scene.background = backdrops[mode];
   contact.visible = !transparent;
@@ -119,44 +187,96 @@ function setBackground(mode) {
   document.body.classList.toggle('bg-transparent', transparent);
   document.body.classList.toggle('bg-light', mode === 'light');
   document.querySelectorAll('#background button').forEach((b) => b.classList.toggle('active', b.dataset.bg === mode));
+  syncOverlayButton();
   setStatus(`Background: ${mode}`);
+  return true;
+}
+
+function fitOverlay(instant = false) {
+  setBackground('transparent');
+  setFrame('overlay', instant);
+  setStatus('Transparent overlay');
+}
+
+function syncTalkButton() {
+  talkButton.setAttribute('aria-pressed', String(mascot.isTalking));
+}
+
+function setTalking(enabled) {
+  mascot.setTalking(enabled);
+  syncTalkButton();
+  setStatus(mascot.isTalking ? 'Talk on' : 'Talk off');
+}
+
+function setPointer(enabled) {
+  mascot.setPointer(enabled);
+  pointerButton.setAttribute('aria-pressed', String(mascot.hasPointer));
+  setStatus(mascot.hasPointer ? 'Teaching pointer on' : 'Teaching pointer off');
 }
 
 function setState(name) {
-  if (!mascot.setState(name)) return;
+  if (!mascot.setState(name)) return false;
   document.querySelectorAll('#states button').forEach((b) => b.classList.toggle('active', b.dataset.state === name));
+  syncTalkButton();
   setStatus(`State: ${name}`);
+  return true;
 }
 
 document.querySelectorAll('#states button').forEach((b) => b.addEventListener('click', () => setState(b.dataset.state)));
 document.querySelectorAll('#framing button').forEach((b) => b.addEventListener('click', () => setFrame(b.dataset.frame)));
 document.querySelectorAll('#background button').forEach((b) => b.addEventListener('click', () => setBackground(b.dataset.bg)));
+document.querySelectorAll('[data-zoom]').forEach((b) => b.addEventListener('click', () => zoom(b.dataset.zoom)));
+talkButton.addEventListener('click', () => setTalking(!mascot.isTalking));
+pointerButton.addEventListener('click', () => setPointer(!mascot.hasPointer));
+overlayButton.addEventListener('click', () => fitOverlay());
+document.getElementById('save-png').addEventListener('click', () => {
+  const link = document.createElement('a');
+  link.download = `mygearhut-${mascot.state}-${currentBackground}.png`;
+  link.href = captureFrame();
+  link.click();
+});
 document.getElementById('ui-toggle').addEventListener('click', () => setUI(document.body.classList.contains('hide-ui')));
 
 function setUI(v) { document.body.classList.toggle('hide-ui', !v); }
 
 const keys = ['idle', 'thinking', 'speaking', 'waving', 'error'];
 window.addEventListener('keydown', (e) => {
-  if (e.key >= '1' && e.key <= '5') setState(keys[Number(e.key) - 1]);
-  else if (e.key.toLowerCase() === 'h') setUI(document.body.classList.contains('hide-ui'));
+  if (e.altKey || e.ctrlKey || e.metaKey || e.repeat) return;
+  const key = e.key.toLowerCase();
+  if (key >= '1' && key <= '5') setState(keys[Number(key) - 1]);
+  else if (key === 'h') setUI(document.body.classList.contains('hide-ui'));
+  else if (key === 'p') setPointer(!mascot.hasPointer);
+  else if (key === 't') setTalking(!mascot.isTalking);
 });
 
 function resize() {
   const w = stage.clientWidth, h = stage.clientHeight;
   if (!w || !h) return;
   renderer.setSize(w, h, false);
-  camera.aspect = w / h;
+  const aspect = w / h;
+  const scale = frameBoost(currentFrame, aspect) / frameBoost(currentFrame, camera.aspect);
+  if (scale !== 1) {
+    camera.position.sub(controls.target).multiplyScalar(scale).add(controls.target);
+    if (transition) {
+      transition.fromPos.sub(transition.fromTarget).multiplyScalar(scale).add(transition.fromTarget);
+      transition.to.position.sub(transition.to.target).multiplyScalar(scale).add(transition.to.target);
+    }
+  }
+  camera.aspect = aspect;
   camera.updateProjectionMatrix();
 }
 new ResizeObserver(resize).observe(stage);
 resize();
 
 setFrame('medium', true);
-const params = new URLSearchParams(location.search);
 if (params.get('ui') === '0') setUI(false);
+if (params.get('overlay') === '1') fitOverlay(true);
 if (params.get('frame')) setFrame(params.get('frame'), true);
 if (params.get('bg')) setBackground(params.get('bg'));
 if (params.get('state')) setState(params.get('state'));
+if (params.get('pointer') === '1') setPointer(true);
+if (params.get('talk') === '1') setTalking(true);
+if (params.get('zoom')) zoom(params.get('zoom'));
 const angle = Number(params.get('yaw'));
 if (Number.isFinite(angle) && angle !== 0) {
   const yaw = THREE.MathUtils.degToRad(angle);
@@ -168,29 +288,18 @@ if (Number.isFinite(angle) && angle !== 0) {
   controls.update();
 }
 
-window.animeMascot = {
-  ready: true,
-  state: (name) => setState(name),
-  frame: (name) => setFrame(name),
-  background: (mode) => setBackground(mode),
-  ui: (v) => setUI(v),
-  blink: () => mascot.blink(),
-  captureFrame: () => renderer.domElement.toDataURL('image/png'),
-};
-window.dispatchEvent(new CustomEvent('mascot:ready'));
+function captureFrame() {
+  renderer.render(scene, camera);
+  return renderer.domElement.toDataURL('image/png');
+}
 
-const timer = new THREE.Timer();
-timer.connect(document);
-renderer.setAnimationLoop(() => {
-  timer.update();
-  const dt = timer.getDelta();
-  const t = timer.getElapsed();
+function draw(dt, t, render = true) {
   mascot.update(dt, t);
 
   if (transition) {
     transition.t += dt;
     const p = Math.min(transition.t / transition.duration, 1);
-    const e = p * p * (3 - 2 * p);
+    const e = ease(p);
     camera.position.lerpVectors(transition.fromPos, transition.to.position, e);
     controls.target.lerpVectors(transition.fromTarget, transition.to.target, e);
     camera.fov = THREE.MathUtils.lerp(transition.fromFov, transition.to.fov, e);
@@ -198,7 +307,45 @@ renderer.setAnimationLoop(() => {
     if (p >= 1) transition = null;
   }
 
+  updateZoom(dt);
   controls.update();
-  if (!document.hidden) renderer.render(scene, camera);
-});
-setStatus('Ready');
+  if (render && (manualClock || !document.hidden)) renderer.render(scene, camera);
+}
+
+let manualTime = 0;
+function step(seconds = 1 / 30) {
+  if (!manualClock || !Number.isFinite(seconds) || seconds <= 0 || seconds > 1) return false;
+  // Match the rig's maximum timestep so low-rate exports do not slow poses down.
+  const steps = Math.ceil(seconds / 0.05);
+  const dt = seconds / steps;
+  for (let i = 0; i < steps; i++) {
+    manualTime += dt;
+    draw(dt, manualTime, i === steps - 1);
+  }
+  return true;
+}
+
+window.animeMascot = {
+  ready: true,
+  state: setState,
+  frame: setFrame,
+  background: setBackground,
+  overlay: fitOverlay,
+  zoom,
+  pointer: setPointer,
+  talk: setTalking,
+  ui: setUI,
+  blink: () => mascot.blink(),
+  captureFrame,
+  step,
+};
+draw(0, 0);
+if (!manualClock) {
+  const timer = new THREE.Timer();
+  timer.connect(document);
+  renderer.setAnimationLoop(() => {
+    timer.update();
+    draw(timer.getDelta(), timer.getElapsed());
+  });
+}
+window.dispatchEvent(new CustomEvent('mascot:ready'));

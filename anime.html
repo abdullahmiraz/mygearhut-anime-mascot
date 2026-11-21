@@ -6,9 +6,9 @@
     <title>MyGearHut Anime Mascot</title>
     <link rel="stylesheet" href="/src/style.css" />
   </head>
-  <body>
+  <body class="anime-viewer">
     <div id="app">
-      <div id="stage"></div>
+      <div id="stage" aria-label="3D mascot viewport"></div>
       <header class="topbar" data-ui>
         <div class="brand"><span class="dot"></span><span>MyGearHut <b>Anime</b></span></div>
         <div class="topbar-actions">
@@ -25,6 +25,16 @@
             <button type="button" data-state="speaking">Speak</button>
             <button type="button" data-state="waving">Wave</button>
             <button type="button" data-state="error">Error</button>
+            <button type="button" data-state="presenting">Present</button>
+            <button type="button" data-state="point-left">Point left</button>
+            <button type="button" data-state="point-right">Point right</button>
+            <button type="button" data-state="comparing">Compare</button>
+            <button type="button" data-state="nodding">Nod</button>
+            <button type="button" data-state="celebrating">Celebrate</button>
+          </div>
+          <div class="row presenter-tools">
+            <button id="talk-toggle" type="button" aria-pressed="false">Talk</button>
+            <button id="pointer-toggle" type="button" aria-pressed="false">Pointer</button>
           </div>
         </section>
         <section>
@@ -34,6 +44,11 @@
             <button type="button" data-frame="medium" class="active">Medium</button>
             <button type="button" data-frame="close">Close</button>
           </div>
+          <div class="row presenter-tools" aria-label="Camera moves">
+            <button type="button" data-zoom="in">Push in</button>
+            <button type="button" data-zoom="out">Pull out</button>
+            <button type="button" data-zoom="punch">Punch in</button>
+          </div>
         </section>
         <section>
           <h2>Background</h2>
@@ -42,8 +57,12 @@
             <button type="button" data-bg="light">Light</button>
             <button type="button" data-bg="transparent">Alpha</button>
           </div>
+          <div class="row presenter-tools">
+            <button id="overlay" type="button" aria-pressed="false">Fit transparent overlay</button>
+            <button id="save-png" type="button">Save PNG</button>
+          </div>
         </section>
-        <p class="hint">Keys 1-5 states. H hide UI.</p>
+        <p class="hint">1–5 poses · T talk · P pointer · H hide UI</p>
       </aside>
       <div class="status" data-ui id="status">Ready</div>
     </div>

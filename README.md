@@ -61,9 +61,26 @@ npm run check   # production build + rig math check
 
 Open [the anime variant](http://127.0.0.1:5173/anime.html) from the dev server or follow the **Anime variant** link in the original viewer. The production build includes both pages.
 
-The anime viewer exposes `window.animeMascot` after `mascot:ready`. Use `state(name)` with `idle`, `thinking`, `speaking`, `waving` or `error`. The other methods are `frame(name)`, `background(mode)`, `ui(show)`, `blink()` and `captureFrame()`.
+Select **Present**, **Point left**, **Point right**, **Compare**, **Nod** or **Celebrate** in the pose controls. **Talk** layers a speaking animation over the selected pose. **Pointer** toggles the teaching stick and follows the hand used for pointing. **Push in** and **Pull out** ease to a new zoom level. **Punch in** gives brief emphasis and returns to the previous zoom.
 
-For a clean three-quarter capture, use `/anime.html?ui=0&frame=medium&yaw=20&bg=transparent`. Use `state=speaking` or `state=waving` to start in that pose.
+**Fit transparent overlay** selects a full-body composition with room for the teaching stick, resets the zoom, and clears the background and floor shadow. **Save PNG** captures the canvas with its alpha channel. Press **H** to hide the viewer controls, **P** to toggle the stick and **T** to toggle talking.
+
+For a clean capture with the stick pointing right, use `/anime.html?overlay=1&ui=0&pointer=1&state=point-right&yaw=12`. Set `talk=1` to start with speaking animation. Set `zoom=in`, `zoom=out` or `zoom=punch` to cue a camera move on load.
+
+The anime viewer exposes `window.animeMascot` after `mascot:ready`.
+
+```js
+const presenter = window.animeMascot;
+presenter.state('point-left'); // idle, thinking, speaking, waving, error, presenting,
+                               // point-left, point-right, comparing, nodding, celebrating
+presenter.pointer(true);
+presenter.talk(true);
+presenter.overlay();
+presenter.zoom('punch', 0.85); // in, out or punch. Duration is optional, in seconds.
+presenter.captureFrame();     // PNG data URL for the current frame.
+```
+
+The other methods are `frame(name)`, `background(mode)`, `ui(show)` and `blink()`. Add `manual=1` to the URL for frame-by-frame capture. Call `step(1 / 30)` once before capturing each 30 fps frame. Each step accepts a duration greater than zero and up to one second.
 
 ## Controls
 
