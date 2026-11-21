@@ -135,28 +135,38 @@ export function createAnimeMascot() {
   part(head, new THREE.SphereGeometry(0.307, 28, 18, 0, Math.PI * 2, 0, Math.PI * 0.32), hair, {
     pos: [0, 0.02, 0], scale: [1.02, 1, 0.94], outline: 1.03,
   });
-  part(head, new THREE.SphereGeometry(0.3, 28, 20, 0, Math.PI * 2, 0, Math.PI * 0.68), hair, {
-    pos: [0, -0.03, -0.12], scale: [0.9, 1, 0.8], outline: 1.03,
+  part(head, new THREE.SphereGeometry(0.3, 28, 20), hair, {
+    pos: [0, -0.02, -0.13], scale: [0.92, 0.96, 0.78], outline: 1.03,
   });
-  part(head, new THREE.SphereGeometry(0.1, 16, 12), hair, {
-    pos: [0, -0.17, -0.18], scale: [1.1, 1.5, 0.7], outline: 1.03,
+  part(head, new THREE.SphereGeometry(0.085, 16, 12), hair, {
+    pos: [0, -0.19, -0.16], scale: [1.1, 1.4, 0.7], outline: 1.03,
   });
   for (const s of [-1, 1]) {
-    part(head, new THREE.SphereGeometry(0.095, 16, 12), hair, {
-      pos: [s * 0.27, 0.01, 0.02], scale: [0.5, 1.1, 0.9], outline: 1.03,
+    part(head, new THREE.SphereGeometry(0.1, 16, 12), hair, {
+      pos: [s * 0.26, -0.01, -0.07], scale: [0.5, 1.2, 0.7], outline: 1.03,
     });
   }
-  for (let i = 0; i < 8; i++) {
-    const x = -0.2 + i * 0.057;
-    const y = 0.28 - Math.abs(i - 3.5) * 0.008;
-    part(head, new THREE.ConeGeometry(0.045, 0.12, 6), i % 2 ? hairLight : hair, {
-      pos: [x, y, 0.19], rot: [2.15, 0, (i - 3.5) * 0.13], outline: 1.04,
+  // Low fringe band plus temple clumps bring the hairline down over the
+  // forehead without covering the brows or eyes.
+  part(head, new THREE.SphereGeometry(0.18, 20, 14), hair, {
+    pos: [0, 0.21, 0.19], scale: [1.2, 0.3, 0.5], outline: 1.03,
+  });
+  for (const s of [-1, 1]) {
+    part(head, new THREE.ConeGeometry(0.045, 0.13, 6), hair, {
+      pos: [s * 0.19, 0.14, 0.19], rot: [2.5, 0, s * 0.25], outline: 1.04,
+    });
+  }
+  for (let i = 0; i < 11; i++) {
+    const x = -0.22 + i * 0.044;
+    const y = 0.28 - Math.abs(i - 5) * 0.006;
+    part(head, new THREE.ConeGeometry(0.05, 0.14, 6), i % 2 ? hairLight : hair, {
+      pos: [x, y, 0.19], rot: [2.2, 0, (i - 5) * 0.1], outline: 1.04,
     });
   }
   for (const s of [-1, 1]) {
     // Ears only. The old hanging hair locks below them read as black shapes.
     part(head, new THREE.SphereGeometry(0.075, 18, 14), skin, {
-      pos: [s * 0.31, -0.035, 0.075], scale: [0.5, 1, 0.6], outline: 1.04,
+      pos: [s * 0.31, -0.035, 0.075], scale: [0.5, 1, 0.6], outline: 0,
     });
     part(head, new THREE.SphereGeometry(0.04, 14, 10), skinShade, {
       pos: [s * 0.33, -0.035, 0.095], scale: [0.35, 0.7, 0.35], outline: 0,

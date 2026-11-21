@@ -128,6 +128,15 @@ if (params.get('ui') === '0') setUI(false);
 if (params.get('frame')) setFrame(params.get('frame'), true);
 if (params.get('bg')) setBackground(params.get('bg'));
 if (params.get('state')) setState(params.get('state'));
+if (params.get('yaw')) {
+  const yaw = THREE.MathUtils.degToRad(Number(params.get('yaw')));
+  const dx = camera.position.x - controls.target.x;
+  const dz = camera.position.z - controls.target.z;
+  const d = Math.hypot(dx, dz);
+  camera.position.x = controls.target.x + Math.sin(yaw) * d;
+  camera.position.z = controls.target.z + Math.cos(yaw) * d;
+  controls.update();
+}
 
 window.animeMascot = {
   ready: true,
