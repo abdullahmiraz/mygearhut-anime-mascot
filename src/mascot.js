@@ -22,7 +22,8 @@ const C = {
   shoeShade: 0xd7dde1,
   rubber: 0x202a33,
   lace: 0xf8fafb,
-  glass: 0x5b6670,
+  glass: 0x78828c,
+  lip: 0x9c5a4f,
 };
 
 const standard = (color, extra = {}) =>
@@ -141,8 +142,8 @@ function makeGlasses() {
   const frameMat = standard(C.glass, { roughness: 0.4, metalness: 0.15 });
 
   for (const side of [-1, 1]) {
-    const shape = roundedRect(new THREE.Shape(), 0.122, 0.09, 0.028);
-    shape.holes.push(roundedRect(new THREE.Path(), 0.104, 0.072, 0.02));
+    const shape = roundedRect(new THREE.Shape(), 0.11, 0.078, 0.025);
+    shape.holes.push(roundedRect(new THREE.Path(), 0.094, 0.062, 0.018));
     const geo = new THREE.ExtrudeGeometry(shape, {
       depth: 0.005,
       bevelEnabled: true,
@@ -152,17 +153,17 @@ function makeGlasses() {
       curveSegments: 10,
     });
     const frame = new THREE.Mesh(geo, frameMat);
-    frame.position.set(side * 0.098, 0.045, 0.228);
+    frame.position.set(side * 0.09, 0.042, 0.218);
     group.add(frame);
 
-    const temple = new THREE.Mesh(new RoundedBoxGeometry(0.1, 0.009, 0.009, 2, 0.004), frameMat);
-    temple.position.set(side * 0.2, 0.056, 0.203);
+    const temple = new THREE.Mesh(new RoundedBoxGeometry(0.092, 0.008, 0.008, 2, 0.004), frameMat);
+    temple.position.set(side * 0.185, 0.052, 0.194);
     temple.rotation.y = side * -0.28;
     group.add(temple);
   }
 
-  const bridge = new THREE.Mesh(new RoundedBoxGeometry(0.06, 0.009, 0.009, 2, 0.004), frameMat);
-  bridge.position.set(0, 0.056, 0.229);
+  const bridge = new THREE.Mesh(new RoundedBoxGeometry(0.052, 0.008, 0.008, 2, 0.004), frameMat);
+  bridge.position.set(0, 0.052, 0.219);
   group.add(bridge);
   return group;
 }
@@ -363,7 +364,7 @@ export function createMascot() {
   root.add(hips);
   parts.hips = hips;
 
-  const pelvis = new THREE.Mesh(new RoundedBoxGeometry(0.42, 0.22, 0.27, 4, 0.08), pants);
+  const pelvis = new THREE.Mesh(new RoundedBoxGeometry(0.38, 0.22, 0.26, 4, 0.08), pants);
   pelvis.position.y = -0.02;
   pelvis.castShadow = true;
   hips.add(pelvis);
@@ -378,13 +379,13 @@ export function createMascot() {
 
   const torsoProfile = [
     new THREE.Vector2(0.001, -0.05),
-    new THREE.Vector2(0.175, -0.035),
-    new THREE.Vector2(0.215, 0.02),
-    new THREE.Vector2(0.228, 0.14),
-    new THREE.Vector2(0.24, 0.3),
-    new THREE.Vector2(0.246, 0.43),
-    new THREE.Vector2(0.23, 0.53),
-    new THREE.Vector2(0.17, 0.59),
+    new THREE.Vector2(0.16, -0.035),
+    new THREE.Vector2(0.198, 0.02),
+    new THREE.Vector2(0.21, 0.14),
+    new THREE.Vector2(0.221, 0.3),
+    new THREE.Vector2(0.226, 0.43),
+    new THREE.Vector2(0.212, 0.53),
+    new THREE.Vector2(0.156, 0.59),
     new THREE.Vector2(0.001, 0.62),
   ];
   const torsoMesh = new THREE.Mesh(new THREE.LatheGeometry(torsoProfile, 40), shirt);
@@ -393,7 +394,7 @@ export function createMascot() {
   torso.add(torsoMesh);
   parts.torsoMesh = torsoMesh;
 
-  const hem = new THREE.Mesh(new THREE.TorusGeometry(0.185, 0.022, 10, 32), shirtDark);
+  const hem = new THREE.Mesh(new THREE.TorusGeometry(0.17, 0.02, 10, 32), shirtDark);
   hem.rotation.x = Math.PI / 2;
   hem.position.y = -0.022;
   torso.add(hem);
@@ -415,16 +416,16 @@ export function createMascot() {
   // Drawstrings follow a slight curve instead of hanging as straight sticks.
   for (const side of [-1, 1]) {
     const curve = new THREE.CatmullRomCurve3([
-      v(side * 0.048, 0.55, 0.215),
-      v(side * 0.052, 0.47, 0.245),
-      v(side * 0.046, 0.39, 0.255),
-      v(side * 0.04, 0.33, 0.252),
+      v(side * 0.048, 0.55, 0.2),
+      v(side * 0.052, 0.47, 0.23),
+      v(side * 0.046, 0.39, 0.234),
+      v(side * 0.04, 0.33, 0.233),
     ]);
     const cord = new THREE.Mesh(new THREE.TubeGeometry(curve, 16, 0.0055, 7, false), laceMat);
     cord.castShadow = true;
     torso.add(cord);
     const aglet = new THREE.Mesh(new THREE.CapsuleGeometry(0.007, 0.016, 3, 8), shoeShade);
-    aglet.position.set(side * 0.04, 0.317, 0.252);
+    aglet.position.set(side * 0.04, 0.317, 0.233);
     torso.add(aglet);
   }
 
@@ -444,10 +445,10 @@ export function createMascot() {
   }
 
   const badge = new THREE.Mesh(new RoundedBoxGeometry(0.09, 0.045, 0.012, 3, 0.011), shirtDeep);
-  badge.position.set(0, 0.31, 0.252);
+  badge.position.set(0, 0.31, 0.232);
   torso.add(badge);
   const badgeDot = new THREE.Mesh(new THREE.SphereGeometry(0.01, 12, 10), soleMat);
-  badgeDot.position.set(0, 0.31, 0.264);
+  badgeDot.position.set(0, 0.31, 0.244);
   torso.add(badgeDot);
 
   // Neck rises out of the collar, with the head above it.
@@ -457,7 +458,7 @@ export function createMascot() {
   torso.add(neck);
   parts.neck = neck;
   track('neck', neck);
-  const neckMesh = new THREE.Mesh(new THREE.CylinderGeometry(0.073, 0.088, 0.19, 20), skin);
+  const neckMesh = new THREE.Mesh(new THREE.CylinderGeometry(0.066, 0.078, 0.19, 20), skin);
   neckMesh.position.y = 0.075;
   neckMesh.castShadow = true;
   neckMesh.receiveShadow = true;
@@ -522,10 +523,32 @@ export function createMascot() {
   }
   parts.eyes = eyes;
 
-  const nose = new THREE.Mesh(new THREE.SphereGeometry(0.028, 20, 14), skinDark);
-  nose.position.set(0, -0.012, 0.242);
-  nose.scale.set(0.9, 1.15, 0.9);
-  head.add(nose);
+  // Nose built from a bridge and tip so it reads as a face, not a ball.
+  const noseBridge = new THREE.Mesh(new THREE.CapsuleGeometry(0.013, 0.045, 4, 12), skin);
+  noseBridge.position.set(0, 0.018, 0.221);
+  noseBridge.rotation.x = -0.16;
+  noseBridge.castShadow = true;
+  head.add(noseBridge);
+  const noseTip = new THREE.Mesh(new THREE.SphereGeometry(0.021, 18, 12), skin);
+  noseTip.position.set(0, -0.026, 0.233);
+  noseTip.scale.set(1.12, 0.85, 1);
+  noseTip.castShadow = true;
+  head.add(noseTip);
+  for (const side of [-1, 1]) {
+    const nostril = new THREE.Mesh(new THREE.SphereGeometry(0.0045, 10, 8), skinDark);
+    nostril.position.set(side * 0.012, -0.038, 0.225);
+    head.add(nostril);
+  }
+
+  const lipMat = standard(C.lip, { roughness: 0.65, transparent: true, opacity: 0.75 });
+  const upperLip = new THREE.Mesh(new THREE.SphereGeometry(0.042, 18, 12), lipMat);
+  upperLip.position.set(0, -0.07, 0.209);
+  upperLip.scale.set(1.15, 0.13, 0.28);
+  head.add(upperLip);
+  const lowerLip = new THREE.Mesh(new THREE.SphereGeometry(0.041, 18, 12), lipMat);
+  lowerLip.position.set(0, -0.092, 0.211);
+  lowerLip.scale.set(1.1, 0.17, 0.28);
+  head.add(lowerLip);
 
   const smileMat = standard(C.mouth, { roughness: 0.85, transparent: true, opacity: 1 });
   const openMat = standard(C.mouth, { roughness: 0.85, transparent: true, opacity: 0 });
@@ -548,27 +571,27 @@ export function createMascot() {
   // Arms and hands.
   for (const side of [-1, 1]) {
     const label = side > 0 ? 'r' : 'l';
-    const shoulderPos = new THREE.Vector3(side * 0.245, 0.47, 0);
-    const shoulderCap = new THREE.Mesh(new THREE.SphereGeometry(0.076, 20, 14), shirt);
+    const shoulderPos = new THREE.Vector3(side * 0.225, 0.47, 0);
+    const shoulderCap = new THREE.Mesh(new THREE.SphereGeometry(0.068, 20, 14), shirt);
     shoulderCap.position.copy(shoulderPos);
     shoulderCap.castShadow = true;
     torso.add(shoulderCap);
 
-    const shoulder = segment({ radius: 0.076, length: 0.33, material: shirt, name: `${label}Shoulder` });
+    const shoulder = segment({ radius: 0.068, length: 0.33, material: shirt, name: `${label}Shoulder` });
     shoulder.position.copy(shoulderPos);
     shoulder.rotation.z = side * 0.1;
     torso.add(shoulder);
     parts[`${label}Shoulder`] = shoulder;
     track(`${label}Shoulder`, shoulder, { x: 0.02, y: 0, z: side * 0.1 });
 
-    const elbow = segment({ radius: 0.07, length: 0.31, material: shirt, name: `${label}Elbow` });
+    const elbow = segment({ radius: 0.063, length: 0.31, material: shirt, name: `${label}Elbow` });
     elbow.position.y = -0.33;
     elbow.rotation.x = 0.06;
     shoulder.add(elbow);
     parts[`${label}Elbow`] = elbow;
     track(`${label}Elbow`, elbow, { x: 0.06, y: 0, z: 0 });
 
-    const elbowCap = new THREE.Mesh(new THREE.SphereGeometry(0.07, 18, 12), shirt);
+    const elbowCap = new THREE.Mesh(new THREE.SphereGeometry(0.063, 18, 12), shirt);
     elbowCap.castShadow = true;
     elbow.add(elbowCap);
 
@@ -582,20 +605,20 @@ export function createMascot() {
   // Legs and shoes.
   for (const side of [-1, 1]) {
     const label = side > 0 ? 'r' : 'l';
-    const hip = segment({ radius: 0.09, length: 0.44, material: pants, name: `${label}Hip` });
+    const hip = segment({ radius: 0.08, length: 0.44, material: pants, name: `${label}Hip` });
     hip.position.set(side * 0.14, -0.04, 0);
     hip.rotation.z = side * 0.02;
     hips.add(hip);
     parts[`${label}Hip`] = hip;
     track(`${label}Hip`, hip, { x: 0, y: 0, z: side * 0.02 });
 
-    const knee = segment({ radius: 0.09, length: 0.4, material: pants, name: `${label}Knee` });
+    const knee = segment({ radius: 0.08, length: 0.4, material: pants, name: `${label}Knee` });
     knee.position.y = -0.44;
     hip.add(knee);
     parts[`${label}Knee`] = knee;
     track(`${label}Knee`, knee);
 
-    const kneeCap = new THREE.Mesh(new THREE.SphereGeometry(0.09, 18, 12), pants);
+    const kneeCap = new THREE.Mesh(new THREE.SphereGeometry(0.08, 18, 12), pants);
     kneeCap.castShadow = true;
     knee.add(kneeCap);
 
