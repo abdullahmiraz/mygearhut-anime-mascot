@@ -276,7 +276,7 @@ export function createAnimeMascot() {
     const breathe = Math.sin(t * 1.8) * 0.006;
     root.position.y = breathe;
     head.rotation.y += Math.sin(t * 0.6) * 0.025;
-    if (state === 'waving') joints.rHand.rotation.z = Math.sin(t * 12) * 0.35;
+    if (state === 'waving') joints.rHand.obj.rotation.z = Math.sin(t * 12) * 0.35;
     if (state === 'speaking') head.rotation.x += Math.sin(t * 5) * 0.02;
     if (state === 'error') root.position.x = Math.sin(t * 28) * 0.006;
     else root.position.x = 0;
