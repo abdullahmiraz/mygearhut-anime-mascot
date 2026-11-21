@@ -96,61 +96,101 @@ export function createAnimeMascot() {
   part(torso, new THREE.TorusGeometry(0.1, 0.025, 8, 20), shirtDark, { pos: [0, 0.42, 0], rot: [Math.PI / 2, 0, 0] });
   part(torso, new THREE.SphereGeometry(0.1, 16, 12), shirtDark, { pos: [0, 0.1, 0.16], scale: [1.5, 0.7, 0.35] });
 
-  const neck = segment(torso, 'neck', 0.065, 0.14, skin, [0, 0.42, 0]);
+  // Neck rises out of the collar; the head sits above it with a small overlap.
+  const neck = new THREE.Group();
+  neck.name = 'neck';
+  neck.position.y = 0.42;
+  torso.add(neck);
   track('neck', neck);
+  part(neck, new THREE.CylinderGeometry(0.082, 0.1, 0.26, 20), skin, { pos: [0, 0.13, 0] });
+  // Radius-based front throat and back-of-neck masses blend the cylinder into
+  // the jaw and shoulders instead of leaving a thin stick.
+  part(neck, new THREE.SphereGeometry(0.075, 16, 12), skinShade, {
+    pos: [0, 0.11, 0.075], scale: [0.85, 1.25, 0.5], outline: 0,
+  });
+  part(neck, new THREE.SphereGeometry(0.08, 16, 12), skin, {
+    pos: [0, 0.12, -0.07], scale: [0.95, 1.2, 0.6], outline: 0,
+  });
 
   const head = new THREE.Group();
   head.name = 'head';
-  head.position.y = 0.16;
+  head.position.y = 0.42;
   neck.add(head);
   track('head', head);
-  part(head, new THREE.SphereGeometry(0.3, 32, 24), skin, { scale: [1, 1.02, 0.88] });
+  // Sculpted head: taper the jaw and push a small chin so the face reads human
+  // instead of a round ball with features stuck on it.
+  const headGeo = new THREE.SphereGeometry(0.3, 40, 28);
+  const hp = headGeo.attributes.position;
+  for (let i = 0; i < hp.count; i++) {
+    let x = hp.getX(i);
+    let y = hp.getY(i);
+    let z = hp.getZ(i);
+    const front = Math.max(0, z / 0.3);
+    const jaw = THREE.MathUtils.smoothstep(-0.04 - y, 0, 0.2);
+    x *= 1 - jaw * 0.14;
+    y *= 1.02;
+    z *= 0.86;
+    z += Math.exp(-Math.pow((y + 0.18) / 0.06, 2)) * front * 0.018;
+    hp.setXYZ(i, x, y, z);
+  }
+  hp.needsUpdate = true;
+  headGeo.computeVertexNormals();
+  part(head, headGeo, skin, {});
 
-  // Anime hair: a cap plus large tapered spikes and side locks.
-  part(head, new THREE.SphereGeometry(0.308, 28, 18, 0, Math.PI * 2, 0, Math.PI * 0.55), hair, {
-    pos: [0, 0.01, 0], scale: [1.02, 1, 0.94],
+  // Anime hair: a smaller cap with shorter bangs that leave the brows visible.
+  part(head, new THREE.SphereGeometry(0.307, 28, 18, 0, Math.PI * 2, 0, Math.PI * 0.32), hair, {
+    pos: [0, 0.02, 0], scale: [1.02, 1, 0.94],
   });
   for (let i = 0; i < 5; i++) {
-    const x = -0.2 + i * 0.1;
-    const y = 0.22 - Math.abs(i - 2) * 0.02;
-    part(head, new THREE.ConeGeometry(0.085, 0.3, 6), i % 2 ? hairLight : hair, {
-      pos: [x, y, 0.22], rot: [3.0, 0, (i - 2) * 0.22], outline: 1.05,
+    const x = -0.17 + i * 0.085;
+    const y = 0.29 - Math.abs(i - 2) * 0.012;
+    part(head, new THREE.ConeGeometry(0.068, 0.16, 6), i % 2 ? hairLight : hair, {
+      pos: [x, y, 0.19], rot: [2.25, 0, (i - 2) * 0.16], outline: 1.05,
     });
   }
   for (const s of [-1, 1]) {
-    part(head, new THREE.ConeGeometry(0.07, 0.26, 7), hair, {
-      pos: [s * 0.28, -0.02, 0.06], rot: [0, 0, s * 0.35], outline: 1.06,
+    // Ears only. The old hanging hair locks below them read as black shapes.
+    part(head, new THREE.SphereGeometry(0.075, 18, 14), skin, {
+      pos: [s * 0.31, -0.035, 0.075], scale: [0.5, 1, 0.6], outline: 1.04,
+    });
+    part(head, new THREE.SphereGeometry(0.04, 14, 10), skinShade, {
+      pos: [s * 0.33, -0.035, 0.095], scale: [0.35, 0.7, 0.35], outline: 0,
     });
   }
 
   const eyes = [];
   for (const s of [-1, 1]) {
     const eye = new THREE.Group();
-    eye.position.set(s * 0.115, 0.035, 0.252);
+    eye.position.set(s * 0.105, 0.055, 0.252);
     head.add(eye);
-    part(eye, new THREE.SphereGeometry(0.085, 24, 16), eyeWhite, { scale: [0.82, 1.2, 0.25], outline: 0 });
-    part(eye, new THREE.SphereGeometry(0.055, 20, 14), iris, { pos: [0, 0.005, 0.018], scale: [0.9, 1, 0.3], outline: 0 });
-    part(eye, new THREE.SphereGeometry(0.032, 16, 12), pupil, { pos: [0, 0.005, 0.026], scale: [0.85, 1, 0.3], outline: 0 });
-    part(eye, new THREE.SphereGeometry(0.016, 12, 10), eyeWhite, { pos: [-0.02, 0.03, 0.032], outline: 0 });
-    part(eye, new THREE.BoxGeometry(0.14, 0.018, 0.02), browMat, { pos: [0, 0.087, 0.015], rot: [0, 0, s * -0.04], outline: 0 });
+    part(eye, new THREE.SphereGeometry(0.07, 24, 16), eyeWhite, { scale: [0.85, 1, 0.25], outline: 0 });
+    part(eye, new THREE.SphereGeometry(0.045, 20, 14), iris, { pos: [0, 0.002, 0.016], scale: [0.92, 1, 0.3], outline: 0 });
+    part(eye, new THREE.SphereGeometry(0.025, 16, 12), pupil, { pos: [0, 0.002, 0.023], scale: [0.85, 1, 0.3], outline: 0 });
+    part(eye, new THREE.SphereGeometry(0.012, 12, 10), eyeWhite, { pos: [-0.016, 0.022, 0.028], outline: 0 });
+    part(eye, new THREE.BoxGeometry(0.12, 0.014, 0.018), browMat, { pos: [0, 0.07, 0.012], rot: [0, 0, s * -0.04], outline: 0 });
     eyes.push(eye);
 
-    const brow = part(head, new THREE.BoxGeometry(0.12, 0.012, 0.018), browMat, { pos: [s * 0.115, 0.175, 0.252], rot: [0, 0, s * 0.1] });
+    const brow = part(head, new THREE.BoxGeometry(0.1, 0.012, 0.018), browMat, { pos: [s * 0.105, 0.15, 0.258], rot: [0, 0, s * 0.1] });
     joints[s > 0 ? 'browR' : 'browL'] = { obj: brow, base: { x: 0, y: 0, z: s * 0.1 }, cur: { x: 0, y: 0, z: s * 0.1 } };
   }
 
-  part(head, new THREE.SphereGeometry(0.022, 12, 10), skinShade, { pos: [0, -0.055, 0.268], scale: [1, 0.7, 0.6], outline: 0 });
+  part(head, new THREE.CapsuleGeometry(0.009, 0.022, 3, 10), skinShade, {
+    pos: [0, -0.006, 0.26], rot: [-0.12, 0, 0], outline: 0,
+  });
+  part(head, new THREE.SphereGeometry(0.016, 14, 10), skinShade, {
+    pos: [0, -0.03, 0.268], scale: [1.2, 0.8, 1], outline: 0,
+  });
 
   const mouth = new THREE.Group();
   mouth.name = 'mouth';
-  mouth.position.set(0, -0.13, 0.258);
+  mouth.position.set(0, -0.115, 0.258);
   head.add(mouth);
   const smileMat = toon(C.mouth, { transparent: true, opacity: 1 });
   const openMat = toon(C.mouth, { transparent: true, opacity: 0 });
-  const smile = part(mouth, new THREE.TorusGeometry(0.045, 0.005, 6, 22, Math.PI * 0.8), smileMat, {
+  const smile = part(mouth, new THREE.TorusGeometry(0.038, 0.0045, 6, 22, Math.PI * 0.8), smileMat, {
     rot: [0, 0, Math.PI * 1.1], outline: 0,
   });
-  const mouthMesh = part(mouth, new THREE.SphereGeometry(0.045, 18, 12), openMat, {
+  const mouthMesh = part(mouth, new THREE.SphereGeometry(0.038, 18, 12), openMat, {
     scale: [1.1, 0.01, 0.25], outline: 0,
   });
 
@@ -176,8 +216,13 @@ export function createAnimeMascot() {
   for (const s of [-1, 1]) {
     const label = s > 0 ? 'r' : 'l';
     const hip = segment(hips, `${label}Hip`, 0.085, 0.36, pants, [s * 0.1, -0.05, 0]);
+    part(hip, new THREE.SphereGeometry(0.088, 16, 12), pants, {});
     track(`${label}Hip`, hip);
     const knee = segment(hip, `${label}Knee`, 0.072, 0.34, pants, [0, -0.36, 0]);
+    part(knee, new THREE.SphereGeometry(0.075, 16, 12), pants, {});
+    part(knee, new THREE.SphereGeometry(0.05, 14, 10), pants, {
+      pos: [0, -0.02, 0.066], scale: [1, 1, 0.5], outline: 0,
+    });
     track(`${label}Knee`, knee);
     part(knee, new THREE.SphereGeometry(0.075, 16, 12), shoe, { pos: [0, -0.35, 0.045], scale: [1, 0.65, 1.5], outline: 1.05 });
     part(knee, new THREE.BoxGeometry(0.14, 0.025, 0.22), sole, { pos: [0, -0.39, 0.05], outline: 0 });
