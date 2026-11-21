@@ -84,18 +84,17 @@ export function createAnimeMascot() {
 
   const hips = new THREE.Group();
   hips.name = 'hips';
-  hips.position.y = 0.72;
+  hips.position.y = 0.79;
   root.add(hips);
-  part(hips, new THREE.SphereGeometry(0.19, 20, 14), pants, { pos: [0, -0.02, 0], scale: [1, 0.7, 0.85] });
+  part(hips, new THREE.SphereGeometry(0.19, 20, 14), pants, { pos: [0, -0.02, 0], scale: [1, 0.91, 0.85] });
 
   const torso = new THREE.Group();
   torso.name = 'torso';
   torso.position.y = 0.06;
   hips.add(torso);
   track('torso', torso);
-  part(torso, new THREE.CapsuleGeometry(0.2, 0.16, 6, 20), shirt, { pos: [0, 0.22, 0] });
+  part(torso, new THREE.CapsuleGeometry(0.2, 0.16, 6, 20), shirt, { pos: [0, 0.22, 0], scale: [1.14, 1, 1.02] });
   part(torso, new THREE.TorusGeometry(0.1, 0.025, 8, 20), shirtDark, { pos: [0, 0.42, 0], rot: [Math.PI / 2, 0, 0] });
-  part(torso, new THREE.SphereGeometry(0.1, 16, 12), shirtDark, { pos: [0, 0.1, 0.16], scale: [1.5, 0.7, 0.35] });
 
   // Neck rises out of the collar; the head sits above it with a small overlap.
   const neck = new THREE.Group();
@@ -212,8 +211,8 @@ export function createAnimeMascot() {
   // Arms.
   for (const s of [-1, 1]) {
     const label = s > 0 ? 'r' : 'l';
-    part(torso, new THREE.SphereGeometry(0.082, 16, 12), shirt, { pos: [s * 0.25, 0.36, 0] });
-    const shoulder = segment(torso, `${label}Shoulder`, 0.075, 0.3, shirt, [s * 0.25, 0.36, 0]);
+    part(torso, new THREE.SphereGeometry(0.085, 16, 12), shirt, { pos: [s * 0.28, 0.36, 0] });
+    const shoulder = segment(torso, `${label}Shoulder`, 0.075, 0.3, shirt, [s * 0.28, 0.36, 0]);
     shoulder.rotation.z = s * 0.12;
     track(`${label}Shoulder`, shoulder, { x: 0, y: 0, z: s * 0.12 });
     const elbow = segment(shoulder, `${label}Elbow`, 0.062, 0.28, shirt, [0, -0.3, 0]);
@@ -230,7 +229,7 @@ export function createAnimeMascot() {
   // Legs.
   for (const s of [-1, 1]) {
     const label = s > 0 ? 'r' : 'l';
-    const hip = segment(hips, `${label}Hip`, 0.085, 0.36, pants, [s * 0.1, -0.05, 0]);
+    const hip = segment(hips, `${label}Hip`, 0.085, 0.36, pants, [s * 0.1, -0.083, 0]);
     part(hip, new THREE.SphereGeometry(0.088, 16, 12), pants, {});
     track(`${label}Hip`, hip);
     const knee = segment(hip, `${label}Knee`, 0.072, 0.34, pants, [0, -0.36, 0]);

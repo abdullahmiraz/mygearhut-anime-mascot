@@ -51,7 +51,7 @@ const mascot = createAnimeMascot();
 scene.add(mascot.root);
 
 const FRAMES = {
-  full: { distance: 4.0, targetY: 0.96, fov: 34 },
+  full: { distance: 4.2, targetY: 0.9, fov: 34 },
   medium: { distance: 2.9, targetY: 1.31, fov: 32 },
   close: { distance: 1.9, targetY: 1.66, fov: 30 },
 };
