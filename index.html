@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#0d1117" />
+    <title>MyGearHut Mascot</title>
+    <link rel="stylesheet" href="/src/style.css" />
+  </head>
+  <body>
+    <div id="app">
+      <div id="stage" aria-label="3D mascot viewport"></div>
+
+      <div id="fallback" class="fallback" hidden>
+        <h1>WebGL unavailable</h1>
+        <p>This mascot needs WebGL. Try a current Chrome, Edge, Firefox or Safari with hardware acceleration on.</p>
+      </div>
+
+      <header class="topbar" data-ui>
+        <div class="brand">
+          <span class="dot"></span>
+          <span>MyGearHut <b>Mascot</b></span>
+        </div>
+        <button id="ui-toggle" class="ghost" type="button" title="Hide interface (H)">Hide UI</button>
+      </header>
+
+      <aside class="panel" data-ui>
+        <section>
+          <h2>Gesture</h2>
+          <div class="row" id="gestures">
+            <button type="button" data-gesture="wave">Wave</button>
+            <button type="button" data-gesture="present">Present</button>
+            <button type="button" data-gesture="point">Point</button>
+            <button type="button" data-gesture="shrug">Shrug</button>
+            <button type="button" data-gesture="nod">Nod</button>
+            <button type="button" data-gesture="think">Think</button>
+          </div>
+        </section>
+
+        <section>
+          <h2>Speech</h2>
+          <button id="talk" class="wide" type="button" aria-pressed="false" title="Toggle talking (T)">Talk: off</button>
+        </section>
+
+        <section>
+          <h2>Framing</h2>
+          <div class="row" id="framing">
+            <button type="button" data-frame="full">Full</button>
+            <button type="button" data-frame="medium" class="active">Medium</button>
+            <button type="button" data-frame="close">Close</button>
+          </div>
+        </section>
+
+        <section>
+          <h2>Background</h2>
+          <div class="row" id="background">
+            <button type="button" data-bg="dark" class="active">Dark</button>
+            <button type="button" data-bg="light">Light</button>
+            <button type="button" data-bg="transparent">Alpha</button>
+          </div>
+        </section>
+
+        <section>
+          <h2>View</h2>
+          <button id="orbit" class="wide" type="button" aria-pressed="true" title="Lock or unlock camera (O)">Orbit: on</button>
+          <button id="reset" class="wide ghost" type="button" title="Reset everything (R)">Reset</button>
+        </section>
+
+        <p class="hint">Drag to rotate. Scroll to zoom. Keys: 1 to 6 gestures, T talk, H hide UI.</p>
+      </aside>
+
+      <div class="status" data-ui id="status">Ready</div>
+    </div>
+
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>

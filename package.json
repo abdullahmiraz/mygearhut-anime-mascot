@@ -1,0 +1,19 @@
+{
+  "name": "mygearhut-mascot",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Stylized 3D explainer human mascot for MyGearHut, built with Three.js",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1",
+    "build": "vite build",
+    "preview": "vite preview --host 127.0.0.1",
+    "check": "npm run build && node scripts/check-rig.mjs"
+  },
+  "dependencies": {
+    "three": "0.187.0"
+  },
+  "devDependencies": {
+    "vite": "7.1.7"
+  }
+}
