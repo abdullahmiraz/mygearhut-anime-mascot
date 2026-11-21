@@ -25,6 +25,18 @@ Sources read on 2026-11-21:
 - `hg-face-controls.jpg`: the facial feature groups Human Generator exposes (upper skull, eyes, ears, nose). Good as a checklist of what a face needs.
 - `hg-poses.jpg`: pose library examples. Useful later for the movement stage, not for the first shape pass.
 
+## Direction locked
+
+Abdullah chose **Male base only**: follow `hg-male-base.jpg` for the next character. Keep the current mascot male. Do not use the female reference for the face.
+
+## Stage 1 complete: shapes and depth
+
+- Fresh Blender scene, no old `.blend` reused.
+- Built a continuous clay blockout from blended metaballs in A-pose, then converted to mesh and lightly smoothed.
+- Saved as `blender/mascot-v2-shapes.blend`.
+- Neutral clay renders: `shape-front.png`, `shape-side.png`, `shape-back.png`, `shape-threeq.png`.
+- This stage has no face detail, no clothing, no rig and no movement. It only checks silhouette and proportion.
+
 ## Workflow agreed with Abdullah
 
 1. Pick one reference direction and lock it. No Blender work before this.
