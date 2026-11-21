@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MyGearHut Anime Mascot</title>
+    <link rel="stylesheet" href="/src/style.css" />
+  </head>
+  <body>
+    <div id="app">
+      <div id="stage"></div>
+      <header class="topbar" data-ui>
+        <div class="brand"><span class="dot"></span><span>MyGearHut <b>Anime</b></span></div>
+        <button id="ui-toggle" class="ghost" type="button">Hide UI</button>
+      </header>
+      <aside class="panel" data-ui>
+        <section>
+          <h2>State</h2>
+          <div class="row" id="states">
+            <button type="button" data-state="idle" class="active">Idle</button>
+            <button type="button" data-state="thinking">Think</button>
+            <button type="button" data-state="speaking">Speak</button>
+            <button type="button" data-state="waving">Wave</button>
+            <button type="button" data-state="error">Error</button>
+          </div>
+        </section>
+        <section>
+          <h2>Framing</h2>
+          <div class="row" id="framing">
+            <button type="button" data-frame="full">Full</button>
+            <button type="button" data-frame="medium" class="active">Medium</button>
+            <button type="button" data-frame="close">Close</button>
+          </div>
+        </section>
+        <section>
+          <h2>Background</h2>
+          <div class="row" id="background">
+            <button type="button" data-bg="dark" class="active">Dark</button>
+            <button type="button" data-bg="light">Light</button>
+            <button type="button" data-bg="transparent">Alpha</button>
+          </div>
+        </section>
+        <p class="hint">Keys 1-5 states. T talk. H hide UI.</p>
+      </aside>
+      <div class="status" data-ui id="status">Ready</div>
+    </div>
+    <script type="module" src="/src/anime-main.js"></script>
+  </body>
+</html>
