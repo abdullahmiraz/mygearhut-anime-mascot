@@ -103,11 +103,11 @@ export function createAnimeMascot() {
   neck.position.y = 0.42;
   torso.add(neck);
   track('neck', neck);
-  part(neck, new THREE.CylinderGeometry(0.082, 0.1, 0.26, 20), skin, { pos: [0, 0.13, 0] });
+  part(neck, new THREE.CylinderGeometry(0.082, 0.1, 0.16, 20), skin, { pos: [0, 0.08, 0] });
 
   const head = new THREE.Group();
   head.name = 'head';
-  head.position.y = 0.42;
+  head.position.y = 0.375;
   neck.add(head);
   track('head', head);
   // Sculpted head: taper the jaw and push a small chin so the face reads human
