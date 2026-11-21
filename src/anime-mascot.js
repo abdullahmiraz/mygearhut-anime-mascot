@@ -48,13 +48,13 @@ function part(parent, geometry, material, { name, pos, rot, scale, outline = 1.0
   return mesh;
 }
 
-function segment(parent, name, radius, length, material, pos) {
+function segment(parent, name, radius, length, material, pos, outline = 1.05) {
   const group = new THREE.Group();
   group.name = name;
   if (pos) group.position.set(...pos);
   parent.add(group);
   part(group, new THREE.CapsuleGeometry(radius, Math.max(0.001, length - 2 * radius), 4, 16), material, {
-    pos: [0, -length / 2, 0],
+    pos: [0, -length / 2, 0], outline,
   });
   return group;
 }
@@ -86,14 +86,15 @@ export function createAnimeMascot() {
   hips.name = 'hips';
   hips.position.y = 0.79;
   root.add(hips);
-  part(hips, new THREE.SphereGeometry(0.19, 20, 14), pants, { pos: [0, -0.02, 0], scale: [1, 0.91, 0.85] });
+  part(hips, new THREE.SphereGeometry(0.19, 20, 14), pants, { pos: [0, -0.05, 0], scale: [0.95, 1.06, 0.88] });
+  part(hips, new THREE.SphereGeometry(0.06, 14, 10), pants, { pos: [0, -0.14, 0], outline: 0 });
 
   const torso = new THREE.Group();
   torso.name = 'torso';
   torso.position.y = 0.06;
   hips.add(torso);
   track('torso', torso);
-  part(torso, new THREE.CapsuleGeometry(0.2, 0.16, 6, 20), shirt, { pos: [0, 0.22, 0], scale: [1.14, 1, 1.02] });
+  part(torso, new THREE.CapsuleGeometry(0.2, 0.16, 6, 20), shirt, { pos: [0, 0.2, 0], scale: [1.18, 1, 1.02] });
   part(torso, new THREE.TorusGeometry(0.1, 0.025, 8, 20), shirtDark, { pos: [0, 0.42, 0], rot: [Math.PI / 2, 0, 0] });
 
   // Neck rises out of the collar; the head sits above it with a small overlap.
@@ -102,11 +103,11 @@ export function createAnimeMascot() {
   neck.position.y = 0.42;
   torso.add(neck);
   track('neck', neck);
-  part(neck, new THREE.CylinderGeometry(0.082, 0.1, 0.16, 20), skin, { pos: [0, 0.08, 0] });
+  part(neck, new THREE.CylinderGeometry(0.082, 0.1, 0.2, 20), skin, { pos: [0, 0.1, 0] });
 
   const head = new THREE.Group();
   head.name = 'head';
-  head.position.y = 0.375;
+  head.position.y = 0.35;
   neck.add(head);
   track('head', head);
   // Sculpted head: taper the jaw and push a small chin so the face reads human
@@ -118,8 +119,8 @@ export function createAnimeMascot() {
     let y = hp.getY(i);
     let z = hp.getZ(i);
     const front = Math.max(0, z / 0.3);
-    const jaw = THREE.MathUtils.smoothstep(-0.04 - y, 0, 0.2);
-    x *= 1 - jaw * 0.14;
+    const jaw = THREE.MathUtils.smoothstep(-0.02 - y, 0, 0.28);
+    x *= 1 - jaw * 0.2;
     y *= 1.02;
     z *= 0.86;
     z += Math.exp(-Math.pow((y + 0.18) / 0.06, 2)) * front * 0.018;
@@ -135,53 +136,48 @@ export function createAnimeMascot() {
     pos: [0, 0.02, 0], scale: [1.02, 1, 0.94], outline: 1.03,
   });
   part(head, new THREE.SphereGeometry(0.3, 28, 20), hair, {
-    pos: [0, -0.02, -0.13], scale: [0.92, 0.96, 0.78], outline: 1.03,
+    pos: [0, -0.02, -0.1], scale: [0.94, 0.92, 0.62], outline: 1.03,
   });
   part(head, new THREE.SphereGeometry(0.085, 16, 12), hair, {
-    pos: [0, -0.19, -0.16], scale: [1.1, 1.4, 0.7], outline: 1.03,
+    pos: [0, -0.19, -0.16], scale: [1.1, 1.4, 0.55], outline: 1.03,
   });
   for (const s of [-1, 1]) {
     part(head, new THREE.SphereGeometry(0.1, 16, 12), hair, {
-      pos: [s * 0.26, -0.01, -0.07], scale: [0.5, 1.2, 0.7], outline: 1.03,
+      pos: [s * 0.26, 0.03, -0.11], scale: [0.35, 1.1, 0.7], outline: 1.03,
     });
   }
-  // Low fringe band plus temple clumps bring the hairline down over the
-  // forehead without covering the brows or eyes.
-  part(head, new THREE.SphereGeometry(0.18, 20, 14), hair, {
-    pos: [0, 0.21, 0.19], scale: [1.2, 0.3, 0.5], outline: 1.03,
-  });
-  for (const s of [-1, 1]) {
-    part(head, new THREE.ConeGeometry(0.045, 0.13, 6), hair, {
-      pos: [s * 0.19, 0.14, 0.19], rot: [2.5, 0, s * 0.25], outline: 1.04,
+  // Three soft fringe clumps instead of a flat band or stray spikes.
+  for (const [x, y, z] of [[-0.12, 0.23, 0.19], [0, 0.2, 0.2], [0.12, 0.23, 0.19]]) {
+    part(head, new THREE.SphereGeometry(0.08, 18, 12), hair, {
+      pos: [x, y, z], scale: [1.2, 0.45, 0.5], outline: 1.03,
     });
   }
   for (let i = 0; i < 11; i++) {
     const x = -0.22 + i * 0.044;
-    const y = 0.28 - Math.abs(i - 5) * 0.006;
-    part(head, new THREE.ConeGeometry(0.05, 0.14, 6), i % 2 ? hairLight : hair, {
-      pos: [x, y, 0.19], rot: [2.2, 0, (i - 5) * 0.1], outline: 1.04,
+    const y = 0.24 - Math.abs(i - 5) * 0.006;
+    part(head, new THREE.ConeGeometry(0.035, 0.09, 6), i % 2 ? hairLight : hair, {
+      pos: [x, y, 0.17], rot: [2.2, 0, (i - 5) * 0.1], outline: 1.04,
     });
   }
   for (const s of [-1, 1]) {
     // Ears only. The old hanging hair locks below them read as black shapes.
-    part(head, new THREE.SphereGeometry(0.075, 18, 14), skin, {
-      pos: [s * 0.31, -0.035, 0.075], scale: [0.5, 1, 0.6], outline: 0,
+    part(head, new THREE.SphereGeometry(0.06, 18, 14), skin, {
+      pos: [s * 0.27, -0.03, 0.045], rot: [0, s * 0.3, 0], scale: [0.45, 1, 0.75], outline: 0,
     });
-    part(head, new THREE.SphereGeometry(0.04, 14, 10), skinShade, {
-      pos: [s * 0.33, -0.035, 0.095], scale: [0.35, 0.7, 0.35], outline: 0,
+    part(head, new THREE.SphereGeometry(0.025, 14, 10), skinShade, {
+      pos: [s * 0.29, -0.03, 0.07], scale: [0.3, 0.6, 0.3], outline: 0,
     });
   }
 
   const eyes = [];
   for (const s of [-1, 1]) {
     const eye = new THREE.Group();
-    eye.position.set(s * 0.105, 0.055, 0.252);
+    eye.position.set(s * 0.092, 0.055, 0.235);
     head.add(eye);
-    part(eye, new THREE.SphereGeometry(0.07, 24, 16), eyeWhite, { scale: [0.85, 1, 0.25], outline: 0 });
+    part(eye, new THREE.SphereGeometry(0.07, 24, 16), eyeWhite, { scale: [0.85, 1, 0.2], outline: 0 });
     part(eye, new THREE.SphereGeometry(0.045, 20, 14), iris, { pos: [0, 0.002, 0.016], scale: [0.92, 1, 0.3], outline: 0 });
     part(eye, new THREE.SphereGeometry(0.025, 16, 12), pupil, { pos: [0, 0.002, 0.023], scale: [0.85, 1, 0.3], outline: 0 });
     part(eye, new THREE.SphereGeometry(0.012, 12, 10), eyeWhite, { pos: [-0.016, 0.022, 0.028], outline: 0 });
-    part(eye, new THREE.BoxGeometry(0.12, 0.014, 0.018), browMat, { pos: [0, 0.07, 0.012], rot: [0, 0, s * -0.04], outline: 0 });
     eyes.push(eye);
 
     const brow = part(head, new THREE.BoxGeometry(0.1, 0.012, 0.018), browMat, { pos: [s * 0.105, 0.15, 0.258], rot: [0, 0, s * 0.1] });
@@ -211,12 +207,12 @@ export function createAnimeMascot() {
   // Arms.
   for (const s of [-1, 1]) {
     const label = s > 0 ? 'r' : 'l';
-    part(torso, new THREE.SphereGeometry(0.085, 16, 12), shirt, { pos: [s * 0.28, 0.36, 0] });
-    const shoulder = segment(torso, `${label}Shoulder`, 0.075, 0.3, shirt, [s * 0.28, 0.36, 0]);
+    part(torso, new THREE.SphereGeometry(0.105, 16, 12), shirt, { pos: [s * 0.25, 0.36, 0], outline: 0 });
+    const shoulder = segment(torso, `${label}Shoulder`, 0.075, 0.3, shirt, [s * 0.25, 0.36, 0], 0);
     shoulder.rotation.z = s * 0.12;
     track(`${label}Shoulder`, shoulder, { x: 0, y: 0, z: s * 0.12 });
-    const elbow = segment(shoulder, `${label}Elbow`, 0.062, 0.28, shirt, [0, -0.3, 0]);
-    part(elbow, new THREE.SphereGeometry(0.066, 16, 12), shirt, {});
+    const elbow = segment(shoulder, `${label}Elbow`, 0.062, 0.28, shirt, [0, -0.3, 0], 0);
+    part(elbow, new THREE.SphereGeometry(0.066, 16, 12), shirt, { outline: 0 });
     track(`${label}Elbow`, elbow);
     const hand = new THREE.Group();
     hand.name = `${label}Hand`;
@@ -232,19 +228,16 @@ export function createAnimeMascot() {
     const hip = segment(hips, `${label}Hip`, 0.085, 0.36, pants, [s * 0.1, -0.083, 0]);
     part(hip, new THREE.SphereGeometry(0.088, 16, 12), pants, {});
     track(`${label}Hip`, hip);
-    const knee = segment(hip, `${label}Knee`, 0.072, 0.34, pants, [0, -0.36, 0]);
-    part(knee, new THREE.SphereGeometry(0.075, 16, 12), pants, {});
-    part(knee, new THREE.SphereGeometry(0.05, 14, 10), pants, {
-      pos: [0, -0.02, 0.066], scale: [1, 1, 0.5], outline: 0,
-    });
+    const knee = segment(hip, `${label}Knee`, 0.072, 0.3, pants, [0, -0.36, 0], 0);
+    part(knee, new THREE.SphereGeometry(0.086, 16, 12), pants, { outline: 0 });
     track(`${label}Knee`, knee);
     // Layered sneaker: outsole, midsole, toe cap, upper, tongue and laces.
     const foot = new THREE.Group();
     foot.name = `${label}Foot`;
-    foot.position.y = -0.35;
+    foot.position.y = -0.29;
     knee.add(foot);
-    part(foot, new RoundedBoxGeometry(0.14, 0.028, 0.24, 3, 0.012), sole, { pos: [0, -0.042, 0.045], outline: 0 });
-    part(foot, new RoundedBoxGeometry(0.145, 0.03, 0.245, 3, 0.012), shoe, { pos: [0, -0.02, 0.045], outline: 1.03 });
+    part(foot, new RoundedBoxGeometry(0.18, 0.028, 0.3, 3, 0.012), sole, { pos: [0, -0.042, 0.07], outline: 0 });
+    part(foot, new RoundedBoxGeometry(0.185, 0.03, 0.305, 3, 0.012), shoe, { pos: [0, -0.02, 0.07], outline: 1.03 });
     part(foot, new THREE.SphereGeometry(0.062, 16, 12), shoe, { pos: [0, 0.005, 0.08], scale: [1, 0.7, 1.4], outline: 1.04 });
     part(foot, new THREE.SphereGeometry(0.052, 14, 10), shoe, { pos: [0, 0.0, 0.135], scale: [1.1, 0.55, 0.65], outline: 0 });
     part(foot, new RoundedBoxGeometry(0.05, 0.012, 0.07, 2, 0.005), shoe, { pos: [0, 0.045, 0.025], rot: [-0.3, 0, 0], outline: 0 });
@@ -253,8 +246,8 @@ export function createAnimeMascot() {
         pos: [0, 0.038 + i * 0.003, 0.055 - i * 0.022], rot: [0, 0, i % 2 ? -0.5 : 0.5], outline: 0,
       });
     }
-    part(foot, new THREE.SphereGeometry(0.04, 14, 10), sole, {
-      pos: [s * 0.07, 0.0, 0.075], scale: [0.18, 0.5, 1.1], outline: 0,
+    part(foot, new RoundedBoxGeometry(0.012, 0.026, 0.16, 2, 0.005), sole, {
+      pos: [s * 0.094, 0.0, 0.075], outline: 0,
     });
   }
 
@@ -286,10 +279,11 @@ export function createAnimeMascot() {
 
     for (const [name, j] of Object.entries(joints)) {
       const values = pose[name];
-      if (!values) continue;
-      j.cur.x += (j.base.x + values[0] - j.cur.x) * k;
-      j.cur.y += (j.base.y + values[1] - j.cur.y) * k;
-      j.cur.z += (j.base.z + values[2] - j.cur.z) * k;
+      if (values == null) continue;
+      const v = Array.isArray(values) ? values : [0, 0, values];
+      j.cur.x += (j.base.x + v[0] - j.cur.x) * k;
+      j.cur.y += (j.base.y + v[1] - j.cur.y) * k;
+      j.cur.z += (j.base.z + v[2] - j.cur.z) * k;
       j.obj.rotation.set(j.cur.x, j.cur.y, j.cur.z);
     }
 
@@ -298,6 +292,7 @@ export function createAnimeMascot() {
     root.position.y = breathe;
     head.rotation.y += Math.sin(t * 0.6) * 0.025;
     if (state === 'waving') joints.rHand.obj.rotation.z = Math.sin(t * 12) * 0.35;
+    else joints.rHand.obj.rotation.z = 0;
     if (state === 'speaking') head.rotation.x += Math.sin(t * 5) * 0.02;
     if (state === 'error') root.position.x = Math.sin(t * 28) * 0.006;
     else root.position.x = 0;
