@@ -134,6 +134,12 @@ button[aria-pressed="true"] {
 button.wide { width: 100%; text-align: left; }
 button.ghost { background: transparent; }
 
+.panel input[type="range"] {
+  width: 100%;
+  margin: 8px 0;
+  accent-color: var(--accent);
+}
+
 .hint {
   margin: 14px 0 0;
   font-size: 10px;

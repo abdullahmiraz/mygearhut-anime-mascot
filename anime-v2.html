@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MyGearHut Anime Mascot v2</title>
+    <link rel="stylesheet" href="/src/style.css" />
+  </head>
+  <body>
+    <div id="app">
+      <div id="stage"></div>
+      <header class="topbar" data-ui>
+        <div class="brand"><span class="dot"></span><span>MyGearHut <b>Anime v2</b></span></div>
+        <div class="topbar-actions">
+          <a class="variant-link" href="./anime.html">Anime v1</a>
+          <a class="variant-link" href="./index.html">Original</a>
+          <button id="ui-toggle" class="ghost" type="button">Hide UI</button>
+        </div>
+      </header>
+      <aside class="panel" data-ui>
+        <section>
+          <h2>State</h2>
+          <div class="row" id="states">
+            <button type="button" data-state="idle" class="active">Idle</button>
+            <button type="button" data-state="thinking">Think</button>
+            <button type="button" data-state="speaking">Speak</button>
+            <button type="button" data-state="waving">Wave</button>
+            <button type="button" data-state="error">Error</button>
+          </div>
+        </section>
+        <section>
+          <h2>Gesture</h2>
+          <div class="row" id="gestures">
+            <button type="button" data-gesture="presenting">Present</button>
+            <button type="button" data-gesture="comparing">Compare</button>
+            <button type="button" data-gesture="point-left">Point L</button>
+            <button type="button" data-gesture="point-right">Point R</button>
+            <button type="button" data-gesture="nodding">Nod</button>
+            <button type="button" data-gesture="celebrating">Cheer</button>
+          </div>
+        </section>
+        <section>
+          <h2>Voice</h2>
+          <button id="talk" class="wide" type="button" aria-pressed="false">Talk: off</button>
+          <input id="amp" type="range" min="0.2" max="1" step="0.05" value="1" aria-label="Speech amplitude" />
+          <button id="pointer" class="wide ghost" type="button" aria-pressed="false">Pointer: off</button>
+        </section>
+        <section>
+          <h2>Framing</h2>
+          <div class="row" id="framing">
+            <button type="button" data-frame="full">Full</button>
+            <button type="button" data-frame="medium" class="active">Medium</button>
+            <button type="button" data-frame="close">Close</button>
+          </div>
+        </section>
+        <section>
+          <h2>Background</h2>
+          <div class="row" id="background">
+            <button type="button" data-bg="dark" class="active">Dark</button>
+            <button type="button" data-bg="light">Light</button>
+            <button type="button" data-bg="transparent">Alpha</button>
+          </div>
+        </section>
+        <p class="hint">Keys 1-5 states. H hide UI. Gestures play once, then settle back.</p>
+      </aside>
+      <div class="status" data-ui id="status">Ready</div>
+    </div>
+    <script type="module" src="/src/anime-main-v2.js"></script>
+  </body>
+</html>

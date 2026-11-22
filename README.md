@@ -82,6 +82,42 @@ presenter.captureFrame();     // PNG data URL for the current frame.
 
 The other methods are `frame(name)`, `background(mode)`, `ui(show)` and `blink()`. Add `manual=1` to the URL for frame-by-frame capture. Call `step(1 / 30)` once before capturing each 30 fps frame. Each step accepts a duration greater than zero and up to one second.
 
+## Anime v2
+
+A second anime variant lives alongside v1; v1 is untouched. Open [the v2 viewer](http://127.0.0.1:5173/anime-v2.html) from the dev server, or follow **Anime v2** from the v1 page.
+
+What changed in the animation layer:
+
+- Every joint is a damped spring with an analytic, frame-rate-independent step. Motion accelerates, overshoots slightly and settles instead of easing linearly.
+- Pose changes are staggered: torso first, then arms, then head, then brows. The change reads as one overlapping movement instead of a snap.
+- Secondary motion: hair hangs from a crown pivot and lags the head, the chest breathes, the torso shifts weight, hands and forearms follow through, and speech drives arm beats.
+- Blink, gaze and idle drift are deterministic, so a recorded take repeats. Blinks close fast, open slowly and occasionally double.
+- Speech uses a phrase envelope with adjustable amplitude, keeps a small smile while talking, and crossfades to the thinking and worried mouths.
+- Gestures play once with staggered anticipation timing and settle back to the previous state. Feet never leave the floor during arm animation.
+
+```bash
+npm run check:v2   # v2 animation rig check
+npm run check      # build + v1 and v2 rig checks
+```
+
+The v2 viewer exposes `window.animeMascotV2` after `mascot:ready`:
+
+```js
+window.animeMascotV2.state('thinking');      // persistent state
+window.animeMascotV2.gesture('waving');      // plays once, optional hold seconds
+window.animeMascotV2.talk(true);
+window.animeMascotV2.amplitude(0.7);
+window.animeMascotV2.pointer(true);
+window.animeMascotV2.blink();
+window.animeMascotV2.gaze(0.004, 0.002);     // hold the eyes at a point
+window.animeMascotV2.frame('medium');
+window.animeMascotV2.background('transparent');
+window.animeMascotV2.ui(false);
+window.animeMascotV2.captureFrame();
+```
+
+URL options match the v1 page (`ui`, `frame`, `bg`, `state`, `yaw`), plus `gesture`, `talk=1`, `pointer=1` and `amp`. Example: `/anime-v2.html?ui=0&frame=medium&bg=transparent&state=speaking&talk=1&yaw=20`.
+
 ## Controls
 
 Drag to orbit, scroll to zoom. Buttons cover gesture, talk, framing, background and orbit.
@@ -126,6 +162,7 @@ This is the intended hook for a future video pipeline. OBS can capture the brows
 - Headless Chrome renders full, medium and close framings on 1280x800 and 900x900.
 - Transparent background renders without floor or rings.
 - `npm run check` verifies wave, point, finger curl, talk open/close and smile crossfade numerically.
+- `npm run check:v2` verifies spring settle and overshoot, planted feet, gesture return, blink, deterministic replay, gaze, amplitude, expressions and hair lag numerically.
 - Visual passes found and fixed a shadowed face, mask-like glasses, disconnected-looking joints, an eye-covering hair cap, strip-like ribbon hair, blob-like clump hair, embedded chest details, a green rim-light streak on the hair, a buried neck, hood flaps beside the neck, and uniform robotic fingers.
 
 Suggested lookdev check before any real video: view at the target aspect ratio, confirm the face is lit, confirm no limb clips through the torso at gesture extremes, confirm the accent reads against the background, then record a 5 second idle and a 5 second talking sample.
